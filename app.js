@@ -19,6 +19,7 @@ async function fetchComments() {
                     <div class="comment-body">${comment.body}</div>
                 </div>
                 <div class="card-actions">
+                    <button class="btn-mask" onclick="maskEmail(${comment.id})">Mask Email</button>
                     <button class="btn-delete" onclick="deleteComment(${comment.id})">Delete</button>
                 </div>
             `;
@@ -26,6 +27,33 @@ async function fetchComments() {
     });
   } catch (error) {
     console.error("Fetch implementation error:", error);
+  }
+}
+
+async function maskEmail(id) {
+  const cardElement = document.getElementById(`comment-${id}`);
+  const emailElement = cardElement.querySelector(".comment-email");
+  const currentEmail = emailElement.innerText;
+
+  if (currentEmail.includes("*******")) return;
+
+  const parts = currentEmail.split("@");
+  if (parts.length !== 2) return;
+
+  const maskedEmail = `${parts[0]}@*******.***`;
+
+  try {
+    const response = await fetch(`${API_URL}/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify({ email: maskedEmail }),
+      headers: { "Content-type": "application/json; charset=UTF-8" },
+    });
+
+    if (response.ok) {
+      emailElement.innerText = maskedEmail;
+    }
+  } catch (error) {
+    console.error("Email patch update failure:", error);
   }
 }
 
